@@ -13,10 +13,9 @@ exports.itemsId = async (req, res) => {
       },
     };
     let uriDetails = `${apiMeliItemsId}${code}/description`;
-
     await axios.all([axios.get(uri), axios.get(uriDetails)]).then(
-      axios.spread((item, description) => {
-        const result = {
+      axios.spread(async (item, description) => {
+        let result = {
           ...AUTHOR_OBJ,
           item: {
             id: item.data.id,
@@ -33,6 +32,15 @@ exports.itemsId = async (req, res) => {
             description: description.data.plain_text,
           },
         };
+        const urlCategory = `${process.env.URL_CATEGORY}${item.data.category_id}`;
+        await axios.all([axios.get(urlCategory)]).then(
+          axios.spread((categotyName) => {
+            result = {
+              ...result,
+              category: categotyName.data.name,
+            };
+          })
+        );
         return res.status(200).send(result);
       })
     );
